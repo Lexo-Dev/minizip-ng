@@ -202,10 +202,10 @@ int32_t mz_stream_lzma_read(void *stream, void *buf, int32_t size) {
 
                     memcpy(lzma->buffer + MZ_LZMA_ZIP_HEADER_SIZE, &uncompressed_size, sizeof(uncompressed_size));
 
-                    read += sizeof(uncompressed_size);
-                    bytes_to_read = sizeof(lzma->buffer);
+                    read += (int32_t)sizeof(uncompressed_size);
+                    bytes_to_read = (int32_t)sizeof(lzma->buffer);
 
-                    lzma->total_in -= sizeof(uncompressed_size);
+                    lzma->total_in -= (int64_t)sizeof(uncompressed_size);
                     lzma->header = 0;
                 }
             }
@@ -269,8 +269,8 @@ static int32_t mz_stream_lzma_flush(void *stream) {
         buffer += MZ_LZMA_ALONE_HEADER_SIZE;
         buffer_len -= MZ_LZMA_ALONE_HEADER_SIZE;
 
-        lzma->buffer_len -= sizeof(uncompressed_size);
-        lzma->total_out -= sizeof(uncompressed_size);
+        lzma->buffer_len -= (int32_t)sizeof(uncompressed_size);
+        lzma->total_out -= (int64_t)sizeof(uncompressed_size);
         lzma->header = 0;
     }
 
@@ -310,8 +310,8 @@ static int32_t mz_stream_lzma_code(void *stream, int32_t flush) {
             return MZ_DATA_ERROR;
         }
 
-        lzma->buffer_len += out_bytes;
-        lzma->total_out += out_bytes;
+        lzma->buffer_len += (int32_t)out_bytes;
+        lzma->total_out += (int64_t)out_bytes;
     } while ((lzma->lstream.avail_in > 0) || (flush == LZMA_FINISH && err == LZMA_OK));
 
     return MZ_OK;

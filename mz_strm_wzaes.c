@@ -92,8 +92,8 @@ int32_t mz_stream_wzaes_open(void *stream, const char *path, int32_t mode) {
     if (wzaes->strength < 1 || wzaes->strength > 3)
         return MZ_PARAM_ERROR;
 
-    key_length = MZ_AES_KEY_LENGTH(wzaes->strength);
-    salt_length = MZ_AES_SALT_LENGTH(wzaes->strength);
+    key_length = (uint16_t)MZ_AES_KEY_LENGTH(wzaes->strength);
+    salt_length = (uint16_t)MZ_AES_SALT_LENGTH(wzaes->strength);
 
     if (mode & MZ_OPEN_MODE_WRITE) {
         mz_crypt_rand(salt_value, salt_length);
@@ -104,7 +104,7 @@ int32_t mz_stream_wzaes_open(void *stream, const char *path, int32_t mode) {
 
     /* Derive the encryption and authentication keys and the password verifier */
     mz_crypt_pbkdf2((uint8_t *)password, password_length, salt_value, salt_length,
-        MZ_AES_KEYING_ITERATIONS, kbuf, 2 * key_length + MZ_AES_PW_VERIFY_SIZE);
+        MZ_AES_KEYING_ITERATIONS, kbuf, (uint16_t)(2 * key_length + MZ_AES_PW_VERIFY_SIZE));
 
     /* Initialize the buffer pos */
     wzaes->crypt_pos = MZ_AES_BLOCK_SIZE;
@@ -221,7 +221,7 @@ int32_t mz_stream_wzaes_write(void *stream, const void *buf, int32_t size) {
         if (bytes_to_write > (size - total_written))
             bytes_to_write = (size - total_written);
 
-        memcpy(wzaes->buffer, buf_ptr, bytes_to_write);
+        memcpy(wzaes->buffer, buf_ptr, (size_t)bytes_to_write);
         buf_ptr += bytes_to_write;
 
         mz_stream_wzaes_ctr_encrypt(stream, (uint8_t *)wzaes->buffer, bytes_to_write);

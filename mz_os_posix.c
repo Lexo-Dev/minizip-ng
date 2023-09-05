@@ -71,7 +71,7 @@ char *mz_os_utf8_string_create(const char *string, int32_t encoding) {
 
     string_length = strlen(string);
     string_utf8_size = string_length * 2;
-    string_utf8 = (char *)calloc((int32_t)(string_utf8_size + 1), sizeof(char));
+    string_utf8 = (char *)calloc((size_t)(string_utf8_size + 1), sizeof(char));
     string_utf8_ptr = string_utf8;
 
     if (string_utf8) {
@@ -148,11 +148,11 @@ int32_t mz_os_rand(uint8_t *buf, int32_t size) {
     /* Ensure different random header each time */
     if (++calls == 1) {
         #define PI_SEED 3141592654UL
-        srand((unsigned)(time(NULL) ^ PI_SEED));
+        srand((unsigned)(time(NULL) ^ (time_t)PI_SEED));
     }
 
     while (i < size)
-        buf[i++] = (rand() >> 7) & 0xff;
+        buf[i++] = (uint8_t)((rand() >> 7) & 0xff);
 
     return size;
 }
@@ -321,7 +321,7 @@ int32_t mz_os_make_symlink(const char *path, const char *target_path) {
 int32_t mz_os_read_symlink(const char *path, char *target_path, int32_t max_target_path) {
     size_t length = 0;
 
-    length = (size_t)readlink(path, target_path, max_target_path - 1);
+    length = (size_t)readlink(path, target_path, (size_t)(max_target_path - 1));
     if (length == (size_t)-1)
         return MZ_EXIST_ERROR;
 

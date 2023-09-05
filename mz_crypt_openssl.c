@@ -155,7 +155,7 @@ int32_t mz_crypt_sha_begin(void *handle) {
 #endif
 
     if (!result) {
-        sha->error = ERR_get_error();
+        sha->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -189,11 +189,11 @@ int32_t mz_crypt_sha_update(void *handle, const void *buf, int32_t size) {
         break;
     }
 #else
-    result = EVP_DigestUpdate(sha->ctx, buf, size);
+    result = EVP_DigestUpdate(sha->ctx, buf, (size_t)size);
 #endif
 
     if (!result) {
-        sha->error = ERR_get_error();
+        sha->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -232,7 +232,7 @@ int32_t mz_crypt_sha_end(void *handle, uint8_t *digest, int32_t digest_size) {
 #endif
 
     if (!result) {
-        sha->error = ERR_get_error();
+        sha->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -328,7 +328,7 @@ int32_t mz_crypt_aes_encrypt_final(void *handle, uint8_t *buf, int32_t size, uin
         result = EVP_CIPHER_CTX_ctrl(aes->ctx, EVP_CTRL_GCM_GET_TAG, tag_size, tag);
 
     if (!result) {
-        aes->error = ERR_get_error();
+        aes->error = (int32_t)ERR_get_error();
         return MZ_CRYPT_ERROR;
     }
 
@@ -369,13 +369,13 @@ int32_t mz_crypt_aes_decrypt_final(void *handle, uint8_t *buf, int32_t size, con
 
     /* Set expected tag */
     if (!EVP_CIPHER_CTX_ctrl(aes->ctx, EVP_CTRL_GCM_SET_TAG, tag_length, (void *)tag)) {
-        aes->error = ERR_get_error();
+        aes->error = (int32_t)ERR_get_error();
         return MZ_CRYPT_ERROR;
     }
 
     /* Must call DecryptFinal for tag verification */
     if (!EVP_DecryptFinal_ex(aes->ctx, NULL, &out_len)) {
-        aes->error = ERR_get_error();
+        aes->error = (int32_t)ERR_get_error();
         return MZ_CRYPT_ERROR;
     }
 
@@ -384,6 +384,7 @@ int32_t mz_crypt_aes_decrypt_final(void *handle, uint8_t *buf, int32_t size, con
 
 static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_length,
     const void *iv, int32_t iv_length, int32_t encrypt) {
+    (void)(iv_length);
     mz_crypt_aes *aes = (mz_crypt_aes *)handle;
     const EVP_CIPHER *type = NULL;
 
@@ -421,7 +422,7 @@ static int32_t mz_crypt_aes_set_key(void *handle, const void *key, int32_t key_l
         return MZ_MEM_ERROR;
 
     if (!EVP_CipherInit_ex(aes->ctx, type, NULL, key, iv, encrypt)) {
-        aes->error = ERR_get_error();
+        aes->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -584,11 +585,11 @@ int32_t mz_crypt_hmac_init(void *handle, const void *key, int32_t key_length) {
     hmac->ctx = EVP_MAC_CTX_new(hmac->mac);
     if (!hmac->ctx)
         return MZ_MEM_ERROR;
-    result = EVP_MAC_init(hmac->ctx, key, key_length, params);
+    result = EVP_MAC_init(hmac->ctx, key, (size_t)key_length, params);
 #endif
 
     if (!result) {
-        hmac->error = ERR_get_error();
+        hmac->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -605,10 +606,10 @@ int32_t mz_crypt_hmac_update(void *handle, const void *buf, int32_t size) {
 #if OPENSSL_VERSION_NUMBER < 0x30000000L
     result = HMAC_Update(hmac->ctx, buf, size);
 #else
-    result = EVP_MAC_update(hmac->ctx, buf, size);
+    result = EVP_MAC_update(hmac->ctx, buf, (size_t)size);
 #endif
     if (!result) {
-        hmac->error = ERR_get_error();
+        hmac->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -635,13 +636,13 @@ int32_t mz_crypt_hmac_end(void *handle, uint8_t *digest, int32_t digest_size) {
     }
 #else
     {
-        size_t digest_outsize = digest_size;
-        result = EVP_MAC_final(hmac->ctx, digest, &digest_outsize, digest_size);
+        size_t digest_outsize = (size_t)digest_size;
+        result = EVP_MAC_final(hmac->ctx, digest, &digest_outsize, (size_t)digest_size);
     }
 #endif
 
     if (!result) {
-        hmac->error = ERR_get_error();
+        hmac->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 
@@ -667,7 +668,7 @@ int32_t mz_crypt_hmac_copy(void *src_handle, void *target_handle) {
         target->ctx = HMAC_CTX_new();
 
     if (!HMAC_CTX_copy(target->ctx, source->ctx)) {
-        target->error = ERR_get_error();
+        target->error = (int32_t)ERR_get_error();
         return MZ_HASH_ERROR;
     }
 #else

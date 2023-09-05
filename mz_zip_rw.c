@@ -846,13 +846,13 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir) {
         }
 
         if (!path) {
-            path = (char *)malloc(resolved_name_size);
-            utf8_name = (char *)malloc(utf8_name_size);
-            resolved_name = (char *)malloc(resolved_name_size);
+            path = (char *)malloc((size_t)resolved_name_size);
+            utf8_name = (char *)malloc((size_t)utf8_name_size);
+            resolved_name = (char *)malloc((size_t)resolved_name_size);
         } else {
-            path = (char *)realloc(path, resolved_name_size);
-            utf8_name = (char *)realloc(utf8_name, utf8_name_size);
-            resolved_name = (char *)realloc(resolved_name, resolved_name_size);
+            path = (char *)realloc(path, (size_t)resolved_name_size);
+            utf8_name = (char *)realloc(utf8_name, (size_t)utf8_name_size);
+            resolved_name = (char *)realloc(resolved_name, (size_t)resolved_name_size);
         }
 
         if (!path || !utf8_name || !resolved_name) {
@@ -863,13 +863,13 @@ int32_t mz_zip_reader_save_all(void *handle, const char *destination_dir) {
         /* Construct output path */
         path[0] = 0;
 
-        strncpy(utf8_name, reader->file_info->filename, utf8_name_size - 1);
+        strncpy(utf8_name, reader->file_info->filename, (size_t)(utf8_name_size - 1));
         utf8_name[utf8_name_size - 1] = 0;
 
         if ((reader->encoding > 0) && (reader->file_info->flag & MZ_ZIP_FLAG_UTF8) == 0) {
             utf8_string = mz_os_utf8_string_create(reader->file_info->filename, reader->encoding);
             if (utf8_string) {
-                strncpy(utf8_name, (char *)utf8_string, utf8_name_size - 1);
+                strncpy(utf8_name, (char *)utf8_string, (size_t)(utf8_name_size - 1));
                 utf8_name[utf8_name_size - 1] = 0;
                 mz_os_utf8_string_delete(&utf8_string);
             }
@@ -1387,8 +1387,8 @@ int32_t mz_zip_writer_entry_close(void *handle) {
         mz_stream_mem_open(writer->file_extra_stream, NULL, MZ_OPEN_MODE_CREATE);
 
         /* Write digest to extrafield */
-        field_length_hash = 4 + hash_digest_size;
-        err = mz_zip_extrafield_write(writer->file_extra_stream, MZ_ZIP_EXTENSION_HASH, field_length_hash);
+        field_length_hash = (int16_t)(4 + hash_digest_size);
+        err = mz_zip_extrafield_write(writer->file_extra_stream, MZ_ZIP_EXTENSION_HASH, (uint16_t)field_length_hash);
         if (err == MZ_OK)
             err = mz_stream_write_uint16(writer->file_extra_stream, writer->hash_algorithm);
         if (err == MZ_OK)
@@ -1855,7 +1855,7 @@ int32_t mz_zip_writer_set_certificate(void *handle, const char *cert_path, const
         writer->cert_data = NULL;
     }
 
-    cert_data = (uint8_t *)malloc(cert_data_size);
+    cert_data = (uint8_t *)malloc((size_t)cert_data_size);
 
     /* Read pkcs12 certificate from disk */
     cert_stream = mz_stream_os_create();

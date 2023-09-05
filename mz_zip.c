@@ -663,7 +663,7 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
             /* Prefer our zip64, ntfs, unix1 extension over incoming */
             if (field_type != MZ_ZIP_EXTENSION_ZIP64 && field_type != MZ_ZIP_EXTENSION_NTFS &&
                 field_type != MZ_ZIP_EXTENSION_UNIX1)
-                extrafield_size += 4 + field_length;
+                extrafield_size += (uint16_t)(4 + field_length);
 
             if (err_mem == MZ_OK)
                 err_mem = mz_stream_seek(file_extra_stream, field_length, MZ_SEEK_CUR);
@@ -674,7 +674,7 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
     if (!skip_aes) {
         if ((file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) && (file_info->aes_version)) {
             field_length_aes = 1 + 1 + 1 + 2 + 2;
-            extrafield_size += 4 + field_length_aes;
+            extrafield_size += (uint16_t)(4 + field_length_aes);
         }
     }
 #else
@@ -686,14 +686,14 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
         (file_info->accessed_date != 0) &&
         (file_info->creation_date != 0) && (!mask)) {
         field_length_ntfs = 8 + 8 + 8 + 4 + 2 + 2;
-        extrafield_size += 4 + field_length_ntfs;
+        extrafield_size += (uint16_t)(4 + field_length_ntfs);
     }
 
     /* Unix1 symbolic links */
     if (file_info->linkname && *file_info->linkname != 0) {
         linkname_size = (uint16_t)strlen(file_info->linkname);
         field_length_unix1 = 12 + linkname_size;
-        extrafield_size += 4 + field_length_unix1;
+        extrafield_size += (uint16_t)(4 + field_length_unix1);
     }
 
     if (local)
@@ -1088,7 +1088,7 @@ static int32_t mz_zip_read_cd(void *handle) {
         if (eocd_pos < zip->cd_offset) {
             /* End of central dir should always come after central dir */
             err = MZ_FORMAT_ERROR;
-        } else if ((uint64_t)eocd_pos < (uint64_t)zip->cd_offset + zip->cd_size) {
+        } else if ((uint64_t)eocd_pos < (uint64_t)zip->cd_offset + (size_t)zip->cd_size) {
             /* Truncate size of cd if incorrect size or offset provided */
             zip->cd_size = eocd_pos - zip->cd_offset;
         }
@@ -1397,7 +1397,7 @@ static int32_t mz_zip_recover_cd(void *handle) {
     /* Set new central directory info */
     mz_zip_set_cd_stream(handle, 0, cd_mem_stream);
     mz_zip_set_number_entry(handle, number_entry);
-    mz_zip_set_disk_number_with_cd(handle, disk_number_with_cd);
+    mz_zip_set_disk_number_with_cd(handle, (uint32_t)disk_number_with_cd);
 
     return MZ_OK;
 }
@@ -1563,10 +1563,10 @@ int32_t mz_zip_set_comment(void *handle, const char *comment) {
     comment_size = (int32_t)strlen(comment);
     if (comment_size > UINT16_MAX)
         return MZ_PARAM_ERROR;
-    zip->comment = (char *)calloc(comment_size + 1, sizeof(char));
+    zip->comment = (char *)calloc((size_t)(comment_size + 1), sizeof(char));
     if (!zip->comment)
         return MZ_MEM_ERROR;
-    strncpy(zip->comment, comment, comment_size);
+    strncpy(zip->comment, comment, (size_t)comment_size);
     return MZ_OK;
 }
 
@@ -2211,15 +2211,15 @@ int32_t mz_zip_entry_write_close(void *handle, uint32_t crc32, int64_t compresse
             int64_t filename_size = zip->file_info.filename_size;
 
             if (filename_size == 0)
-                filename_size = strlen(zip->file_info.filename);
+                filename_size = (int64_t)strlen(zip->file_info.filename);
 
             /* Since we write zip64 extension first we know its offset */
             err = mz_stream_seek(zip->stream, 2 + 2 + filename_size + 4, MZ_SEEK_CUR);
 
             if (err == MZ_OK)
-                err = mz_stream_write_uint64(zip->stream, zip->file_info.uncompressed_size);
+                err = mz_stream_write_uint64(zip->stream, (uint64_t)zip->file_info.uncompressed_size);
             if (err == MZ_OK)
-                err = mz_stream_write_uint64(zip->stream, zip->file_info.compressed_size);
+                err = mz_stream_write_uint64(zip->stream, (uint64_t)zip->file_info.compressed_size);
         }
 
         mz_stream_set_prop_int64(zip->stream, MZ_STREAM_PROP_DISK_NUMBER, end_disk_number);
@@ -2268,7 +2268,7 @@ int32_t mz_zip_entry_get_compress_stream(void *handle, void **compress_stream) {
 }
 
 int32_t mz_zip_entry_close(void *handle) {
-    return mz_zip_entry_close_raw(handle, UINT64_MAX, 0);
+    return mz_zip_entry_close_raw(handle, (int64_t)UINT64_MAX, 0);
 }
 
 int32_t mz_zip_entry_close_raw(void *handle, int64_t uncompressed_size, uint32_t crc32) {
@@ -2279,7 +2279,7 @@ int32_t mz_zip_entry_close_raw(void *handle, int64_t uncompressed_size, uint32_t
         return MZ_PARAM_ERROR;
 
     if (zip->open_mode & MZ_OPEN_MODE_WRITE)
-        err = mz_zip_entry_write_close(handle, crc32, UINT64_MAX, uncompressed_size);
+        err = mz_zip_entry_write_close(handle, crc32, (int64_t)UINT64_MAX, uncompressed_size);
     else
         err = mz_zip_entry_read_close(handle, NULL, NULL, NULL);
 

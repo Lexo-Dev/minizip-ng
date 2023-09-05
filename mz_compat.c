@@ -121,7 +121,7 @@ static int32_t mz_stream_ioapi_read(void *stream, void *buf, int32_t size) {
     } else
         return MZ_PARAM_ERROR;
 
-    return zread(opaque, ioapi->handle, buf, size);
+    return (int32_t)zread(opaque, ioapi->handle, buf, (size_t)size);
 }
 
 static int32_t mz_stream_ioapi_write(void *stream, const void *buf, int32_t size) {
@@ -142,7 +142,7 @@ static int32_t mz_stream_ioapi_write(void *stream, const void *buf, int32_t size
     } else
         return MZ_PARAM_ERROR;
 
-    written = zwrite(opaque, ioapi->handle, buf, size);
+    written = (int32_t)zwrite(opaque, ioapi->handle, buf, (size_t)size);
     return written;
 }
 
@@ -153,9 +153,9 @@ static int64_t mz_stream_ioapi_tell(void *stream) {
         return MZ_OPEN_ERROR;
 
     if (ioapi->filefunc64.ztell64_file)
-        return ioapi->filefunc64.ztell64_file(ioapi->filefunc64.opaque, ioapi->handle);
+        return (int64_t)ioapi->filefunc64.ztell64_file(ioapi->filefunc64.opaque, ioapi->handle);
     else if (ioapi->filefunc.ztell_file)
-        return ioapi->filefunc.ztell_file(ioapi->filefunc.opaque, ioapi->handle);
+        return (int64_t)ioapi->filefunc.ztell_file(ioapi->filefunc.opaque, ioapi->handle);
 
     return MZ_INTERNAL_ERROR;
 }
@@ -167,10 +167,10 @@ static int32_t mz_stream_ioapi_seek(void *stream, int64_t offset, int32_t origin
         return MZ_OPEN_ERROR;
 
     if (ioapi->filefunc64.zseek64_file) {
-        if (ioapi->filefunc64.zseek64_file(ioapi->filefunc64.opaque, ioapi->handle, offset, origin) != 0)
+        if (ioapi->filefunc64.zseek64_file(ioapi->filefunc64.opaque, ioapi->handle, (size_t)offset, origin) != 0)
             return MZ_INTERNAL_ERROR;
     } else if (ioapi->filefunc.zseek_file) {
-        if (ioapi->filefunc.zseek_file(ioapi->filefunc.opaque, ioapi->handle, (int32_t)offset, origin) != 0)
+        if (ioapi->filefunc.zseek_file(ioapi->filefunc.opaque, ioapi->handle, (size_t)offset, origin) != 0)
             return MZ_INTERNAL_ERROR;
     } else
         return MZ_PARAM_ERROR;
@@ -531,7 +531,7 @@ int zipOpenNewFileInZip3(zipFile file, const char *filename, const zip_fileinfo 
     unsigned long crc_for_crypting) {
     return zipOpenNewFileInZip3_64(file, filename, zipfi, extrafield_local, size_extrafield_local,
         extrafield_global, size_extrafield_global, comment, compression_method, level, raw, windowBits,
-        memLevel, strategy, password, crc_for_crypting, 0);
+        memLevel, strategy, password, (uint32_t)crc_for_crypting, 0);
 }
 
 int zipOpenNewFileInZip3_64(zipFile file, const char *filename, const zip_fileinfo *zipfi,
@@ -596,7 +596,7 @@ int zipCloseFileInZipRaw64(zipFile file, uint64_t uncompressed_size, unsigned lo
     mz_compat *compat = (mz_compat *)file;
     if (!compat)
         return ZIP_PARAMERROR;
-    return mz_zip_entry_close_raw(compat->handle, (int64_t)uncompressed_size, crc32);
+    return mz_zip_entry_close_raw(compat->handle, (int64_t)uncompressed_size, (uint32_t)crc32);
 }
 
 int zipCloseFileInZip(zipFile file) {
@@ -1197,7 +1197,7 @@ int64_t unzGetOffset64(unzFile file) {
 }
 
 int unzSetOffset(unzFile file, unsigned long pos) {
-    return unzSetOffset64(file, pos);
+    return unzSetOffset64(file, (int64_t)pos);
 }
 
 int unzSetOffset64(unzFile file, int64_t pos) {
@@ -1224,7 +1224,7 @@ int unzGetLocalExtrafield(unzFile file, void *buf, unsigned int len) {
     if (bytes_to_copy > file_info->extrafield_size)
         bytes_to_copy = file_info->extrafield_size;
 
-    memcpy(buf, file_info->extrafield, bytes_to_copy);
+    memcpy(buf, file_info->extrafield, (size_t)bytes_to_copy);
     return MZ_OK;
 }
 
@@ -1243,8 +1243,8 @@ uint64_t unzTell64(unzFile file) {
 uint64_t unztell64(unzFile file) {
     mz_compat *compat = (mz_compat *)file;
     if (!compat)
-        return UNZ_PARAMERROR;
-    return compat->total_out;
+        return (uint64_t)UNZ_PARAMERROR;
+    return (uint64_t)compat->total_out;
 }
 
 int unzSeek(unzFile file, int32_t offset, int origin) {

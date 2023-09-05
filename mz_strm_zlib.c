@@ -159,7 +159,7 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size) {
                 return read;
 
             zlib->zstream.next_in = zlib->buffer;
-            zlib->zstream.avail_in = read;
+            zlib->zstream.avail_in = (uInt)read;
         }
 
         total_in_before = zlib->zstream.avail_in;
@@ -198,7 +198,7 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size) {
         return zlib->error;
     }
 
-    return total_out;
+    return (int32_t)total_out;
 #endif
 }
 
@@ -233,7 +233,7 @@ static int32_t mz_stream_zlib_deflate(void *stream, int flush) {
         err = ZLIB_PREFIX(deflate)(&zlib->zstream, flush);
         total_out_after = zlib->zstream.total_out;
 
-        out_bytes = (uint32_t)(total_out_after - total_out_before);
+        out_bytes = (int32_t)(total_out_after - total_out_before);
 
         zlib->buffer_len += out_bytes;
         zlib->total_out += out_bytes;

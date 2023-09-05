@@ -68,7 +68,7 @@ int32_t mz_stream_zstd_open(void *stream, const char *path, int32_t mode) {
         zstd->out.dst = zstd->buffer;
         zstd->out.size = sizeof(zstd->buffer);
         zstd->out.pos = 0;
-        ZSTD_CCtx_setParameter(zstd->zcstream, ZSTD_c_compressionLevel, zstd->preset);
+        ZSTD_CCtx_setParameter(zstd->zcstream, ZSTD_c_compressionLevel, (int32_t)zstd->preset);
 #endif
     } else if (mode & MZ_OPEN_MODE_READ) {
 #ifdef MZ_ZIP_NO_DECOMPRESSION
@@ -201,7 +201,7 @@ static int32_t mz_stream_zstd_compress(void *stream, ZSTD_EndDirective flush) {
 
         total_out_after = zstd->out.pos;
 
-        out_bytes = (uint32_t)(total_out_after - total_out_before);
+        out_bytes = (int32_t)(total_out_after - total_out_before);
 
         zstd->buffer_len += out_bytes;
         zstd->total_out += out_bytes;
@@ -228,7 +228,7 @@ int32_t mz_stream_zstd_write(void *stream, const void *buf, int32_t size) {
 
     zstd->in.src = buf;
     zstd->in.pos = 0;
-    zstd->in.size = size;
+    zstd->in.size = (size_t)size;
 
     err = mz_stream_zstd_compress(stream, ZSTD_e_continue);
     if (err != MZ_OK) {
@@ -315,7 +315,7 @@ int32_t mz_stream_zstd_set_prop_int64(void *stream, int32_t prop, int64_t value)
         if (value < 0)
             zstd->preset = 6;
         else
-            zstd->preset = (int16_t)value;
+            zstd->preset = (uint32_t)value;
         return MZ_OK;
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         zstd->max_total_in = value;

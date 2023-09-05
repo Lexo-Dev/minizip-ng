@@ -261,7 +261,7 @@ int32_t mz_stream_find(void *stream, const void *find, int32_t find_size, int64_
             break;
 
         for (i = 0; i <= read + buf_pos - find_size; i += 1) {
-            if (memcmp(&buf[i], find, find_size) != 0)
+            if (memcmp(&buf[i], find, (size_t)find_size) != 0)
                 continue;
 
             disk_pos = mz_stream_tell(stream);
@@ -282,7 +282,7 @@ int32_t mz_stream_find(void *stream, const void *find, int32_t find_size, int64_
             first = 0;
         }
 
-        memmove(buf, buf + read, find_size);
+        memmove(buf, buf + read, (size_t)find_size);
         read_pos += read;
     }
 
@@ -320,10 +320,10 @@ int32_t mz_stream_find_reverse(void *stream, const void *find, int32_t find_size
         if ((read <= 0) || (read + buf_pos < find_size))
             break;
         if (read + buf_pos < MZ_STREAM_FIND_SIZE)
-            memmove(buf + MZ_STREAM_FIND_SIZE - (read + buf_pos), buf, read);
+            memmove(buf + MZ_STREAM_FIND_SIZE - (read + buf_pos), buf, (size_t)read);
 
         for (i = find_size; i <= (read + buf_pos); i += 1) {
-            if (memcmp(&buf[MZ_STREAM_FIND_SIZE - i], find, find_size) != 0)
+            if (memcmp(&buf[MZ_STREAM_FIND_SIZE - i], find, (size_t)find_size) != 0)
                 continue;
 
             disk_pos = mz_stream_tell(stream);
@@ -347,7 +347,7 @@ int32_t mz_stream_find_reverse(void *stream, const void *find, int32_t find_size
         if (read == 0)
             break;
 
-        memmove(buf + read_size, buf, find_size);
+        memmove(buf + read_size, buf, (size_t)find_size);
         read_pos += read;
     }
 

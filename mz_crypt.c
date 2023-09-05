@@ -140,7 +140,7 @@ int32_t  mz_crypt_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *sa
     if (err == MZ_OK)
         err = mz_crypt_hmac_update(hmac2, salt, salt_length);
 
-    block_count = 1 + ((uint16_t)key_length - 1) / MZ_HASH_SHA1_SIZE;
+    block_count = (uint16_t)(1 + (key_length - 1) / MZ_HASH_SHA1_SIZE);
 
     for (i = 0; (err == MZ_OK) && (i < block_count); i += 1) {
         memset(ux, 0, sizeof(ux));

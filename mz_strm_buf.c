@@ -164,7 +164,7 @@ int32_t mz_stream_buffered_read(void *stream, void *buf, int32_t size) {
             if (bytes_to_copy > bytes_left_to_read)
                 bytes_to_copy = bytes_left_to_read;
 
-            memcpy((char *)buf + buf_len, buffered->readbuf + buffered->readbuf_pos, bytes_to_copy);
+            memcpy((char *)buf + buf_len, buffered->readbuf + buffered->readbuf_pos, (size_t)bytes_to_copy);
 
             buf_len += bytes_to_copy;
             bytes_left_to_read -= bytes_to_copy;
@@ -226,7 +226,7 @@ int32_t mz_stream_buffered_write(void *stream, const void *buf, int32_t size) {
         }
 
         memcpy(buffered->writebuf + buffered->writebuf_pos,
-            (const char *)buf + (bytes_to_write - bytes_left_to_write), bytes_to_copy);
+            (const char *)buf + (bytes_to_write - bytes_left_to_write), (size_t)bytes_to_copy);
 
         mz_stream_buffered_print("Buffered - Write copy (remaining %" PRId32 " write %" PRId32 ":%" PRId32 " len %" PRId32 ")\n",
             bytes_to_copy, bytes_to_write, bytes_left_to_write, buffered->writebuf_len);
@@ -292,7 +292,7 @@ int32_t mz_stream_buffered_seek(void *stream, int64_t offset, int32_t origin) {
 
         if (buffered->readbuf_len > 0) {
             if (offset <= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos)) {
-                buffered->readbuf_pos += (uint32_t)offset;
+                buffered->readbuf_pos += (int32_t)offset;
                 return MZ_OK;
             }
             offset -= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos);
@@ -300,7 +300,7 @@ int32_t mz_stream_buffered_seek(void *stream, int64_t offset, int32_t origin) {
         }
         if (buffered->writebuf_len > 0) {
             if (offset <= ((int64_t)buffered->writebuf_len - buffered->writebuf_pos)) {
-                buffered->writebuf_pos += (uint32_t)offset;
+                buffered->writebuf_pos += (int32_t)offset;
                 return MZ_OK;
             }
             /* offset -= (buffered->writebuf_len - buffered->writebuf_pos); */

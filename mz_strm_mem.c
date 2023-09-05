@@ -61,7 +61,7 @@ static int32_t mz_stream_mem_set_size(void *stream, int32_t size) {
         return MZ_BUF_ERROR;
 
     if (mem->buffer) {
-        memcpy(new_buf, mem->buffer, mem->size);
+        memcpy(new_buf, mem->buffer, (size_t)mem->size);
         free(mem->buffer);
     }
 
@@ -106,7 +106,7 @@ int32_t mz_stream_mem_read(void *stream, void *buf, int32_t size) {
     if (size <= 0)
         return 0;
 
-    memcpy(buf, mem->buffer + mem->position, size);
+    memcpy(buf, mem->buffer + mem->position, (size_t)size);
     mem->position += size;
 
     return size;
@@ -136,7 +136,7 @@ int32_t mz_stream_mem_write(void *stream, const void *buf, int32_t size) {
         }
     }
 
-    memcpy(mem->buffer + mem->position, buf, size);
+    memcpy(mem->buffer + mem->position, buf, (size_t)size);
 
     mem->position += size;
     if (mem->position > mem->limit)

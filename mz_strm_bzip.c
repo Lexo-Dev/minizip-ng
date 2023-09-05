@@ -217,8 +217,8 @@ static int32_t mz_stream_bzip_compress(void *stream, int flush) {
 
         out_bytes = (uint32_t)(total_out_after - total_out_before);
 
-        bzip->buffer_len += out_bytes;
-        bzip->total_out += out_bytes;
+        bzip->buffer_len += (int32_t)out_bytes;
+        bzip->total_out += (int64_t)out_bytes;
 
         if (err == BZ_STREAM_END)
             break;
