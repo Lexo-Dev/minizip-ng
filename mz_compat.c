@@ -170,7 +170,7 @@ static int32_t mz_stream_ioapi_seek(void *stream, int64_t offset, int32_t origin
         if (ioapi->filefunc64.zseek64_file(ioapi->filefunc64.opaque, ioapi->handle, (size_t)offset, origin) != 0)
             return MZ_INTERNAL_ERROR;
     } else if (ioapi->filefunc.zseek_file) {
-        if (ioapi->filefunc.zseek_file(ioapi->filefunc.opaque, ioapi->handle, (size_t)offset, origin) != 0)
+        if (ioapi->filefunc.zseek_file(ioapi->filefunc.opaque, ioapi->handle, (uint32_t)offset, origin) != 0)
             return MZ_INTERNAL_ERROR;
     } else
         return MZ_PARAM_ERROR;
